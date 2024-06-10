@@ -101,7 +101,7 @@ namespace EcsCollision
             [ReadOnly] public NativeArray<FluidSimlationComponent> particleData;
 
             [ReadOnly] public ParticleParameterComponent parameter;
-
+            public float DT;
 
             public NativeArray<Vector3> pressureDir;
             public NativeArray<Vector3> pressureVel;
@@ -154,7 +154,7 @@ namespace EcsCollision
                                 pressureVel[index] += particleData[j].velocity;
                             }
 
-                            moveRes[index] += Mathf.Clamp01(Vector3.Dot(rij.normalized, (particleData[index].velocity + particleData[index].acc * parameter.DT)));
+                            moveRes[index] += Mathf.Clamp01(Vector3.Dot(rij.normalized, (particleData[index].velocity + particleData[index].acc * DT)));
                         }
 
                         // Next neighbor
@@ -316,6 +316,7 @@ namespace EcsCollision
             public float Amount;
 
             public ParticleParameterComponent parameter;
+            public float DT;
 
             public void Execute(int index)
             {
@@ -326,7 +327,7 @@ namespace EcsCollision
                     {
                         if (particleData[index].isGround)
                         {
-                            temp.velocity *= 1 - (parameter.ParticleViscosity * parameter.DT);
+                            temp.velocity *= 1 - (parameter.ParticleViscosity * DT);
                         }
                     }
                     else
@@ -358,7 +359,7 @@ namespace EcsCollision
 
                                 temp.velocity = (temp.velocity * parameter.SimulateLiquid) + (reflected * (1 - parameter.SimulateLiquid));
 
-                                temp.position -= pressureDir[index] * parameter.DT * parameter.ParticlePush * 10;
+                                temp.position -= pressureDir[index] * DT * parameter.ParticlePush * 10;
                             }
                         }
                     }
@@ -376,6 +377,8 @@ namespace EcsCollision
             public ParticleParameterComponent parameter;
             public NativeArray<Vector3> pressureVel;
 
+            public float DT;
+
             public void Execute([EntityIndexInQuery] int index, ref FluidSimlationComponent data)//, in LocalTransform transform
             {
                 var acc = particleData[index].acc;
@@ -385,7 +388,7 @@ namespace EcsCollision
                     //data.acc -= parameter.Gravity; //=========== 계속 Acc가 쌓임
                     acc -= parameter.Gravity;
                 }
-                data.velocity = particleData[index].velocity + acc * parameter.DT;
+                data.velocity = particleData[index].velocity + acc * DT;
                 //if ()
 
                 if (float.IsNaN(particleData[index].velocity.x) || float.IsNaN(particleData[index].velocity.y) || float.IsNaN(particleData[index].velocity.z))
@@ -428,7 +431,7 @@ namespace EcsCollision
 
                     }
 
-                    data.position = particleData[index].position + force * parameter.DT;
+                    data.position = particleData[index].position + force * DT;
                 }
 
                 data.acc = Vector3.zero;
@@ -501,7 +504,7 @@ namespace EcsCollision
                 return;
             }// 스폰된 위치 정보를 FluidSimlationComponent 에게 줌
 
-            if (timer > Parameter.DT)
+            if (timer > SystemAPI.Time.DeltaTime)
             {
                 timer = 0;
                 return;
@@ -597,6 +600,7 @@ namespace EcsCollision
                 cellOffsetTable = cellOffsetTableNative,
                 particleData = particleData,
                 parameter = Parameter,
+                DT = SystemAPI.Time.DeltaTime,
                 pressureDir = particleDir,
                 pressureVel = particleVel,
                 moveRes = particleMoveRes
@@ -637,7 +641,8 @@ namespace EcsCollision
                 pressureVel = particleVel,
                 moveRes = particleMoveRes,
                 Amount = particleCount,
-                parameter = Parameter
+                parameter = Parameter,
+                DT = SystemAPI.Time.DeltaTime
             };
             JobHandle ComputeCollisionHandle = ComputeCollisionJob.Schedule(particleCount, 64, ObstacleCollisionHandle);
             //ComputeCollisionHandle.Complete();
@@ -648,7 +653,8 @@ namespace EcsCollision
             {
                 particleData = particleData,
                 pressureVel = particleVel,
-                parameter = Parameter
+                parameter = Parameter,
+                DT = SystemAPI.Time.DeltaTime
             };
             JobHandle AddPositionHandle = AddPositionJob.ScheduleParallel(ParticleGroup, ComputeCollisionHandle);
             AddPositionHandle.Complete();// ------ 없으면 에러

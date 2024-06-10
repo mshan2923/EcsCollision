@@ -165,7 +165,7 @@ namespace EcsCollision
                     spawnerAspect.particle.ValueRW.ParticleDrag = ParticleParameter.instance.particleDrag;
                     spawnerAspect.particle.ValueRW.ParticlePush = ParticleParameter.instance.particlePush;
                     spawnerAspect.particle.ValueRW.SimulateLiquid = ParticleParameter.instance.SimulateLiquid;
-                    spawnerAspect.particle.ValueRW.DT = 1f / ParticleParameter.instance.MoveFPS;
+                    //spawnerAspect.particle.ValueRW.DT = 1f / ParticleParameter.instance.MoveFPS;
                     spawnerAspect.particle.ValueRW.floorType = ParticleParameter.instance.floorType;
                     spawnerAspect.particle.ValueRW.floorHeight = ParticleParameter.instance.floorHeight;
 

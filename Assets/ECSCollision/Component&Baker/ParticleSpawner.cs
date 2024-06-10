@@ -24,7 +24,7 @@ namespace EcsCollision
             {
                 if (OnChangeMaxSpawnAmount != null && maxAmount != value)
                 {
-                    OnChangeMaxSpawnAmount(maxAmount, value);
+                    //OnChangeMaxSpawnAmount(maxAmount, value);
                 }
                 maxAmount = value; 
             }

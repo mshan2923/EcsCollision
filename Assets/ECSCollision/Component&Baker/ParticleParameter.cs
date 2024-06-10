@@ -55,7 +55,7 @@ namespace EcsCollision
         public float ParticleDrag;
         [Tooltip("충돌시 일어냄 강도")]
         public float ParticlePush;
-        public float DT;
+        //public float DT;
 
         public float SimulateLiquid;
 
@@ -118,7 +118,7 @@ namespace EcsCollision
                 ParticleViscosity = authoring.particleViscosity,
                 ParticleDrag = authoring.particleDrag,
                 ParticlePush = authoring.particlePush,
-                DT = 1f / authoring.MoveFPS,
+                //DT = 1f / authoring.MoveFPS,
                 SimulateLiquid = authoring.SimulateLiquid,
 
                 CollisionPush = authoring.collisionPush,
