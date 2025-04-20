@@ -47,7 +47,7 @@ namespace EcsCollision
             public void Execute(int index)
             {
                 float3 position = particleData[index].position;
-                    //positions[index].Position;
+                //positions[index].Position;
 
                 int hash = GridHash.Hash(position, cellRadius);
                 hashMap.Add(hash, index);
@@ -149,7 +149,8 @@ namespace EcsCollision
                             if (float.IsNaN(particleData[j].velocity.x) || float.IsNaN(particleData[j].velocity.y) || float.IsNaN(particleData[j].velocity.z))
                             {
 
-                            }else
+                            }
+                            else
                             {
                                 pressureVel[index] += particleData[j].velocity;
                             }
@@ -239,7 +240,7 @@ namespace EcsCollision
                     default:
                         return;
                 }
-                
+
             }
         }
 
@@ -249,8 +250,8 @@ namespace EcsCollision
             public NativeArray<FluidSimlationComponent> particleData;
             public NativeArray<Entity> particleEntity;
 
-            [ReadOnly]  public NativeArray<LocalTransform> collisionTransform;
-            [ReadOnly]  public NativeArray<CollisionComponent> collisions;
+            [ReadOnly] public NativeArray<LocalTransform> collisionTransform;
+            [ReadOnly] public NativeArray<CollisionComponent> collisions;
 
             public ParticleParameterComponent parameter;
 
@@ -397,11 +398,11 @@ namespace EcsCollision
                 }
                 else
                 {
-                    
+
                     var force = particleData[index].force;
                     if (force.sqrMagnitude > 0.0001f)
                     {
-                        
+
                         if (math.dot(particleData[index].velocity.normalized, force.normalized) < 0)
                         {
                             force = math.reflect(particleData[index].velocity, force.normalized);
@@ -419,7 +420,7 @@ namespace EcsCollision
                         force = particleData[index].velocity;
                     }
 
-                    if (! Mathf.Approximately(pressureVel[index].sqrMagnitude, 0))
+                    if (!Mathf.Approximately(pressureVel[index].sqrMagnitude, 0))
                     {
                         Custom.Math.CollisionSphereReflect(force, pressureVel[index], out var vec0, out var vec1);
 
@@ -476,7 +477,7 @@ namespace EcsCollision
                 Enabled = false;
 
             isReady = false;
-            
+
         }
 
         protected override void OnUpdate()
@@ -534,7 +535,7 @@ namespace EcsCollision
             var obstacleTransform = ObstacleGroup.ToComponentDataArray<LocalTransform>(Allocator.TempJob);
             var obstacleTypeData = ObstacleGroup.ToComponentDataArray<CollisionComponent>(Allocator.TempJob);
 
-            
+
             var floorECB = new EntityCommandBuffer(Allocator.TempJob);
             var collisionECB = SystemAPI.GetSingleton<EndFixedStepSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(EntityManager.WorldUnmanaged);//new EntityCommandBuffer(Allocator.TempJob);
@@ -556,7 +557,7 @@ namespace EcsCollision
 
             //-----
 
-            
+
             ResetAcc ResetAccJob = new ResetAcc
             {
                 particleData = particleData,
@@ -661,12 +662,12 @@ namespace EcsCollision
 
             Debugging(particleData, "AddPositionJob");
 
-            ApplyPosition ApplyPositionJob = new() 
-            {
-                size = Parameter.ParticleRadius / 0.5f
-            };
-            //JobHandle ApplyPositionHandle = ApplyPositionJob.ScheduleParallel(ParticleGroup, AddPositionHandle);
-            ApplyPositionJob.ScheduleParallel(ParticleGroup);
+            // ApplyPosition ApplyPositionJob = new() 
+            // {
+            //     size = Parameter.ParticleRadius / 0.5f
+            // };
+            // //JobHandle ApplyPositionHandle = ApplyPositionJob.ScheduleParallel(ParticleGroup, AddPositionHandle);
+            // ApplyPositionJob.ScheduleParallel(ParticleGroup);//? 따로 때어 내기기
 
             #endregion
 
@@ -693,7 +694,7 @@ namespace EcsCollision
             }
         }
 
-        public void Debugging(NativeArray<FluidSimlationComponent> ParameterData , string comment)
+        public void Debugging(NativeArray<FluidSimlationComponent> ParameterData, string comment)
         {
             //DebuggingIndex
             //ParameterData[0].position
