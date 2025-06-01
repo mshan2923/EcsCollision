@@ -17,8 +17,9 @@ namespace EcsCollision
     //[UpdateAfter(typeof(EndInitializationEntityCommandBufferSystem))]
     public partial class ParticleSpawnerSystem : SystemBase
     {
-        public Entity spanwerEntity;
+        public Entity SpawnerEntity;
         public RefRW<ParticleSpawnerComponent> SpawnManager;
+        public RefRW<ParticleParameterComponent> ParticleManager;
         public DynamicBuffer<ParticleSpawnAreaElement> SpawnAreaBuffer;
 
         public EntityQuery SpawnAreaQuery;
@@ -36,13 +37,14 @@ namespace EcsCollision
         {
             base.OnStartRunning();
 
+            ParticleManager = SystemAPI.GetSingletonRW<ParticleParameterComponent>();
             if (SystemAPI.TryGetSingletonRW<ParticleSpawnerComponent>(out var spawnerComponent))
             {
                 SpawnManager = spawnerComponent;
                 SpawnAreaQuery = GetEntityQuery(typeof(ParticleSpawnAreaComponent));
 
-                spanwerEntity = SystemAPI.GetSingletonEntity<ParticleParameterComponent>();
-                spawnerAspect = SystemAPI.GetAspect<SpawnerAspect>(spanwerEntity);
+                SpawnerEntity = SystemAPI.GetSingletonEntity<ParticleSpawnerComponent>();
+                spawnerAspect = SystemAPI.GetAspect<SpawnerAspect>(SpawnerEntity);
 
                 SpawnAreaBuffer = SystemAPI.GetSingletonBuffer<ParticleSpawnAreaElement>();
 
@@ -60,7 +62,7 @@ namespace EcsCollision
                 new CalculateSpawnPoint()
                 {
                     spawnManager = spawnerComponent.ValueRO,
-                    particleSize = spawnerAspect.Particle.ParticleRadius
+                    particleSize = ParticleManager.ValueRO.ParticleRadius
                 }.ScheduleParallel(Dependency).Complete();
                 // ParticleSpawnAreaElement 의 LocalMinPos , SpawnPoints 계산
 
@@ -99,13 +101,13 @@ namespace EcsCollision
         }
         protected override void OnUpdate()
         {
-            if (spanwerEntity.Equals(Entity.Null))
+            if (SpawnerEntity.Equals(Entity.Null))
             {
                 Enabled = false;
                 return;
             }
 
-            spawnerAspect = SystemAPI.GetAspect<SpawnerAspect>(spanwerEntity);
+            spawnerAspect = SystemAPI.GetAspect<SpawnerAspect>(SpawnerEntity);
 
             {
                 if (Input.GetMouseButton(0) && false)
@@ -145,29 +147,30 @@ namespace EcsCollision
             IntervalCount += SystemAPI.Time.DeltaTime;
 
             {
-                if (!Mathf.Approximately(spawnerAspect.Particle.ParticleRadius, ParticleParameter.instance.particleRadius))
+                ParticleManager = SystemAPI.GetSingletonRW<ParticleParameterComponent>();
+                if (!Mathf.Approximately(ParticleManager.ValueRO.ParticleRadius, ParticleParameter.instance.particleRadius))
                 {
-                    //var parameter = spawnerAspect.Particle;
+                    //var parameter = ParticleManager;
                     //parameter.ParticleRadius = ParticleSpawner.instance.ParticleRadius;
                     //EntityManager.SetComponentData(spawnerAspect.self, parameter);
 
-                    spawnerAspect.particle.ValueRW.ParticleRadius = ParticleParameter.instance.particleRadius;
+                    ParticleManager.ValueRW.ParticleRadius = ParticleParameter.instance.particleRadius;
 
-                    //Debug.Log($"Edited : {spawnerAspect.Particle.ParticleRadius} / {ParticleSpawner.instance.ParticleRadius}");
+                    //Debug.Log($"Edited : {ParticleManager.ParticleRadius} / {ParticleSpawner.instance.ParticleRadius}");
                 }//HasheDluidSimulation 에서 위치 적용할때 같이 하면 바로 적용
 
                 if (ParticleParameter.instance.NeedUpdate)
                 {
-                    spawnerAspect.particle.ValueRW.ParticleRadius = ParticleParameter.instance.particleRadius;
-                    spawnerAspect.particle.ValueRW.SmoothRadius = ParticleParameter.instance.smoothRadius;
-                    spawnerAspect.particle.ValueRW.Gravity = ParticleParameter.instance.gravity;
-                    spawnerAspect.particle.ValueRW.ParticleViscosity = ParticleParameter.instance.particleViscosity;
-                    spawnerAspect.particle.ValueRW.ParticleDrag = ParticleParameter.instance.particleDrag;
-                    spawnerAspect.particle.ValueRW.ParticlePush = ParticleParameter.instance.particlePush;
-                    spawnerAspect.particle.ValueRW.SimulateLiquid = ParticleParameter.instance.SimulateLiquid;
-                    //spawnerAspect.particle.ValueRW.DT = 1f / ParticleParameter.instance.MoveFPS;
-                    spawnerAspect.particle.ValueRW.floorType = ParticleParameter.instance.floorType;
-                    spawnerAspect.particle.ValueRW.floorHeight = ParticleParameter.instance.floorHeight;
+                    ParticleManager.ValueRW.ParticleRadius = ParticleParameter.instance.particleRadius;
+                    ParticleManager.ValueRW.SmoothRadius = ParticleParameter.instance.smoothRadius;
+                    ParticleManager.ValueRW.Gravity = ParticleParameter.instance.gravity;
+                    ParticleManager.ValueRW.ParticleViscosity = ParticleParameter.instance.particleViscosity;
+                    ParticleManager.ValueRW.ParticleDrag = ParticleParameter.instance.particleDrag;
+                    ParticleManager.ValueRW.ParticlePush = ParticleParameter.instance.particlePush;
+                    ParticleManager.ValueRW.SimulateLiquid = ParticleParameter.instance.SimulateLiquid;
+                    //ParticleManager.ValueRW.DT = 1f / ParticleParameter.instance.MoveFPS;
+                    ParticleManager.ValueRW.floorType = ParticleParameter.instance.floorType;
+                    ParticleManager.ValueRW.floorHeight = ParticleParameter.instance.floorHeight;
 
                     ParticleParameter.instance.NeedUpdate = false;
                 }
@@ -199,7 +202,7 @@ namespace EcsCollision
                 ParticleSpawner.instance.SpawnAmount = spawnerAspect.GetActiveParticleCount(this);
                 ParticleSpawner.instance.SpawnAmountForSecond = Math.Min(Math.Min(spawnAmount, spawnerAspect.GetSpawnPointAmount(spawnArea)), disabled.Length);
 
-                if (spawnerAspect.EnableParticles(this, ecb, disabled, spawnArea,
+                if (spawnerAspect.EnableParticles(this, ecb, disabled, spawnArea, ParticleManager.ValueRO,
                     (uint)World.Time.ElapsedTime + 1u, out var enableHandler))
                 {
                     enableHandler.Schedule(spawnAmount, 8, Dependency).Complete();
@@ -316,7 +319,7 @@ namespace EcsCollision
         public void Execute(int index)
         {
             //var Lpos = spawnerAspect.GetSpawnPoint(spawnArea[0], index);
-            var Lpos = SpawnerAspect.GetSpawnPoint(transform, spawnArea[0].LocalMinPos, 
+            var Lpos = SpawnerAspect.GetSpawnPoint(transform, spawnArea[0].LocalMinPos,
                 particleParameter.ParticleRadius, spawner.SpawnBetweenSpace, spawnArea[0].SpawnPoints, index);
 
             ecb.SetEnabled(index, disabled[index], true);

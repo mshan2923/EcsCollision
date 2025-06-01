@@ -480,6 +480,7 @@ namespace EcsCollision
 
         }
 
+        #region  Update
         protected override void OnUpdate()
         {
             if (isReady == false)
@@ -693,7 +694,7 @@ namespace EcsCollision
                 //collisionECB.Dispose();
             }
         }
-
+        #endregion Update
         public void Debugging(NativeArray<FluidSimlationComponent> ParameterData, string comment)
         {
             //DebuggingIndex

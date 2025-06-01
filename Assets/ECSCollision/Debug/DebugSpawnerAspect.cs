@@ -173,7 +173,7 @@ namespace EcsCollision
         #region EntityQuery
         public NativeArray<Entity> GetActiveParticle(SystemBase systemBase)
         {
-            var particleQB = new EntityQueryBuilder(Allocator.TempJob).WithAll<FluidSimlationComponent, LocalTransform>();
+            using var particleQB = new EntityQueryBuilder(Allocator.TempJob).WithAll<FluidSimlationComponent, LocalTransform>();
             return systemBase.GetEntityQuery(particleQB).ToEntityArray(Allocator.TempJob);
         }
         public bool GetDisableParticle(SystemBase systemBase, NativeList<Entity> SpawnedParticle, out NativeArray<Entity> Disabled)

@@ -9,9 +9,9 @@ using UnityEngine;
 
 namespace EcsCollision
 {
-    public enum ColliderShape { Sphere, Box, Plane};
-    public enum ColliderEvent { Collision , DisableTrigger, KillTrigger , AccelerationTrigger};
-    public class CollisionAspect : MonoBehaviour
+    public enum ColliderShape { Sphere, Box, Plane };
+    public enum ColliderEvent { Collision, DisableTrigger, KillTrigger, AccelerationTrigger };
+    public class CollisionObstacleAuthoring : MonoBehaviour
     {
         public ColliderShape colliderType;
         public ColliderEvent colliderEvent = ColliderEvent.Collision;
@@ -226,7 +226,7 @@ namespace EcsCollision
         public Vector3 GetRotatedBoxSize(LocalTransform transform)
         {
             Vector3 extents = WorldSize * 0.5f;
-            Vector3[] points = new Vector3[] 
+            Vector3[] points = new Vector3[]
             {
                 transform.Right() * extents.x + transform.Up() * extents.y + transform.Forward() * extents.z,//ppp
                 transform.Right() * extents.x + transform.Up() * extents.y - transform.Forward() * extents.z,//ppm
@@ -247,9 +247,9 @@ namespace EcsCollision
             };
         }
     }
-    public class CollisionBaker : Baker<CollisionAspect>
+    public class CollisionBaker : Baker<CollisionObstacleAuthoring>
     {
-        public override void Bake(CollisionAspect authoring)
+        public override void Bake(CollisionObstacleAuthoring authoring)
         {
             if (authoring.TryGetComponent<MeshCollider>(out var meshCollider))
             {
@@ -267,13 +267,13 @@ namespace EcsCollision
                 AddComponent(GetEntity(authoring, TransformUsageFlags.Dynamic),
                     new CollisionComponent
                     {
-                        collidershape = IsEllipse? ColliderShape.Box : authoring.colliderType,
+                        collidershape = IsEllipse ? ColliderShape.Box : authoring.colliderType,
                         colliderEvent = authoring.colliderEvent,
                         WorldSize = size,
                         AccVelocity = authoring.AccVelocity
                     });
             }
-            else if(authoring.TryGetComponent<SphereCollider>(out var sphereCollider))
+            else if (authoring.TryGetComponent<SphereCollider>(out var sphereCollider))
             {
                 var size = sphereCollider.radius * 2f * Mathf.Max(authoring.transform.localScale.x, authoring.transform.localScale.y, authoring.transform.localScale.z);
 
@@ -282,10 +282,11 @@ namespace EcsCollision
                     {
                         collidershape = ColliderShape.Sphere,
                         colliderEvent = authoring.colliderEvent,
-                        WorldSize = new float3(1,1,1) * size,
+                        WorldSize = new float3(1, 1, 1) * size,
                         AccVelocity = authoring.AccVelocity
                     });
-            }else if (authoring.TryGetComponent<BoxCollider>(out var boxCollider))
+            }
+            else if (authoring.TryGetComponent<BoxCollider>(out var boxCollider))
             {
                 var size = boxCollider.size;
                 size.x *= authoring.transform.localScale.x;
@@ -306,7 +307,8 @@ namespace EcsCollision
             if (authoring.colliderEvent == ColliderEvent.Collision)
             {
                 AddComponent<FluidCollider>(GetEntity(authoring, TransformUsageFlags.Dynamic));
-            }else
+            }
+            else
             {
                 AddComponent<FluidTrigger>(GetEntity(authoring, TransformUsageFlags.Dynamic));
             }

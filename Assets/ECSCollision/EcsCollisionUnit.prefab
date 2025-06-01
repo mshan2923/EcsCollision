@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1489858220572479035}
   - component: {fileID: 453534481964663770}
   - component: {fileID: 1217725884282317994}
+  - component: {fileID: -7002339377522175854}
   m_Layer: 0
   m_Name: EcsCollisionUnit
   m_TagString: Untagged
@@ -27,13 +28,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4119383697818013576}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3361030417495301340
 MeshFilter:
@@ -60,6 +61,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -123,3 +127,16 @@ MonoBehaviour:
   Force: {x: 0, y: 0, z: 0}
   Acc: {x: 0, y: 0, z: 0}
   IsGround: 0
+--- !u!114 &-7002339377522175854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4119383697818013576}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9324fbcfa311a7c47bfd1facc2515b0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TeamIndex: 1

@@ -61,7 +61,7 @@ namespace EcsCollision
                     // 스폰할 엔티티가 이미 존재하면 프레임 드랍 + 스폰 안됨
                     //spawnerAspect.SpawnParticle(ecb, 4632u).Schedule(Dependency).Complete();
                     //IntiECB.AddJobHandleForProducer(Dependency);
-                    Debug.Log("--------------" + spawnerAspect.self);
+
                     new DebugSpawnerAspect.SpawnJob()
                     {
                         ecb = ecb.AsParallelWriter(),
@@ -77,7 +77,7 @@ namespace EcsCollision
                     return;
                 }
 
-                var particle = GetEntityQuery(typeof(FluidSimlationComponent), typeof(LocalTransform)).ToEntityArray(Allocator.TempJob);
+                using var particle = GetEntityQuery(typeof(FluidSimlationComponent), typeof(LocalTransform)).ToEntityArray(Allocator.TempJob);
                 //spawnerAspect.GetActiveParticle(this);
 
                 if (!SpawnedParticle.IsCreated && IsSpawn)

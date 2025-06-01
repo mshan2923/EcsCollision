@@ -20,7 +20,7 @@ namespace EcsCollision
         public readonly RefRW<ParticleSpawnerComponent> spawn;
 
         readonly RefRO<LocalTransform> transform;
-        public readonly RefRW<ParticleParameterComponent> particle;
+        //public readonly RefRW<ParticleParameterComponent> particle;
         public readonly DynamicBuffer<ParticleSpawnAreaElement> spawnArea;
 
         public LocalTransform Transform
@@ -31,10 +31,10 @@ namespace EcsCollision
         {
             get => spawn.ValueRO;
         }
-        public ParticleParameterComponent Particle
-        {
-            get => particle.ValueRO;
-        }
+        // public ParticleParameterComponent Particle
+        // {
+        //     get => particle.ValueRO;
+        // }
         public int SpawnAreaCount
         {
             get => spawnArea.Length;
@@ -50,12 +50,12 @@ namespace EcsCollision
         /// <param name="randomSeed"></param>
         /// <param name="SpawnAmount"></param>
         /// <returns></returns>
-        public SpawnJob SpawnParticle(EntityCommandBuffer ecb, uint randomSeed, int SpawnAmount)
+        public SpawnJob SpawnParticle(EntityCommandBuffer ecb, ParticleParameterComponent manager, uint randomSeed, int SpawnAmount)
         {
             return new SpawnJob
             {
                 ecb = ecb,
-                particle = Particle,
+                particle = manager,
                 particleSpawner = SpawnData,
                 randomSeed = randomSeed,
                 SpawnAmount = SpawnAmount,
@@ -73,7 +73,9 @@ namespace EcsCollision
         }
 
         public bool EnableParticles(SystemBase systemBase, EntityCommandBuffer ecb,
-            NativeArray<Entity> Disabled, NativeArray<ParticleSpawnAreaComponent> Area, uint randomSeed, out EnableJob allEnable)
+            NativeArray<Entity> Disabled, NativeArray<ParticleSpawnAreaComponent> Area,
+            ParticleParameterComponent manager,
+            uint randomSeed, out EnableJob allEnable)
         {
 
             if (Disabled.Length > 0)
@@ -86,7 +88,7 @@ namespace EcsCollision
                     disabled = Disabled,
                     SpawnerTrans = Transform,
                     AreaData = Area,
-                    particleParameter = Particle,
+                    particleParameter = manager,
                     spawner = SpawnData
                 };
                 return true;
@@ -331,7 +333,7 @@ namespace EcsCollision
 
                 spawnTrans.Position = AreaData[SpawnAreaIndex].Bound.center;
 
-                var Lpos = SpawnerAspect.GetSpawnPoint(spawnTrans, AreaData[SpawnAreaIndex].LocalMinPos, 
+                var Lpos = SpawnerAspect.GetSpawnPoint(spawnTrans, AreaData[SpawnAreaIndex].LocalMinPos,
                     particleParameter.ParticleRadius, spawner.SpawnBetweenSpace, AreaData[SpawnAreaIndex].SpawnPoints, index);
                 spawnTrans.Position = Lpos + random.NextFloat3(new float3(1, 1, 1) * -1f, new float3(1, 1, 1)) * spawner.SpawnBetweenSpace * 0.5f;
                 spawnTrans.Scale = particleParameter.ParticleRadius / 0.5f;
@@ -339,9 +341,9 @@ namespace EcsCollision
                 ecb.SetEnabled(index, disabled[index], true);
                 ecb.SetComponentEnabled<FluidSimlationComponent>(index, disabled[index], true);
                 ecb.SetComponent(index, disabled[index], spawnTrans);
-                ecb.SetComponent(index, disabled[index], new FluidSimlationComponent() 
+                ecb.SetComponent(index, disabled[index], new FluidSimlationComponent()
                 {
-                    position = spawnTrans.Position ,
+                    position = spawnTrans.Position,
                     velocity = AreaData[SpawnAreaIndex].IntiVelocity
                 });
             }
@@ -349,7 +351,7 @@ namespace EcsCollision
         #endregion
 
         #region EntityQuery
-        public NativeArray<Entity> GetActiveParticle(SystemBase systemBase , Allocator allocator = Allocator.Temp)
+        public NativeArray<Entity> GetActiveParticle(SystemBase systemBase, Allocator allocator = Allocator.Temp)
         {
             var particleQB = new EntityQueryBuilder(Allocator.Temp).WithAll<FluidSimlationComponent, LocalTransform>();
             return systemBase.GetEntityQuery(particleQB).ToEntityArray(allocator);
@@ -377,10 +379,10 @@ namespace EcsCollision
         #endregion
 
 
-        public float3 GetSpawnPoint(ParticleSpawnAreaComponent area, int index)
-        {
-            return GetSpawnPoint(Transform, area.LocalMinPos, Particle.ParticleRadius, SpawnData.SpawnBetweenSpace, area.SpawnPoints, index);
-        }
+        // public float3 GetSpawnPoint(ParticleSpawnAreaComponent area, int index)
+        // {
+        //     return GetSpawnPoint(Transform, area.LocalMinPos, Particle.ParticleRadius, SpawnData.SpawnBetweenSpace, area.SpawnPoints, index);
+        // }
         public static float3 GetSpawnPoint(LocalTransform transform, float3 MinPos, float radius, float between, int3 spawnPoints, int index)
         {
             int PosY = index / (spawnPoints.x * spawnPoints.z);
@@ -390,7 +392,7 @@ namespace EcsCollision
             return GetSpawnPoint(transform, MinPos, radius, between, PosX, PosY, PosZ);
         }
 
-        public static float3 GetSpawnPoint(LocalTransform transform, float3 MinPos , float radius, float between, int LocalX, int LocalY, int LocalZ)
+        public static float3 GetSpawnPoint(LocalTransform transform, float3 MinPos, float radius, float between, int LocalX, int LocalY, int LocalZ)
         {
             var Local = math.rotate(transform.Rotation, MinPos);
             Local += transform.Right() * LocalX * (radius * 2 + between);
@@ -418,7 +420,8 @@ namespace EcsCollision
                     spawn.ValueRW.MaxAmount = Amount;
                     return true;
                 }
-            }else if (Amount > Spawned.Length)
+            }
+            else if (Amount > Spawned.Length)
             {
                 spawn.ValueRW.MaxAmount = Amount;
                 return true;

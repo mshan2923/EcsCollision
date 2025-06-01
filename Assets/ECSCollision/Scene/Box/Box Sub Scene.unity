@@ -38,7 +38,6 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -157,6 +156,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   colliderType: 2
   colliderEvent: 0
+  AccVelocity: {x: 0, y: 0, z: 0}
 --- !u!64 &128605069
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -278,6 +278,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   colliderType: 2
   colliderEvent: 0
+  AccVelocity: {x: 0, y: 0, z: 0}
 --- !u!64 &456159268
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -436,6 +437,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   colliderType: 2
   colliderEvent: 0
+  AccVelocity: {x: 0, y: 0, z: 0}
 --- !u!64 &1110557209
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -572,6 +574,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   colliderType: 2
   colliderEvent: 0
+  AccVelocity: {x: 0, y: 0, z: 0}
 --- !u!64 &1418175795
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -678,6 +681,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   colliderType: 2
   colliderEvent: 0
+  AccVelocity: {x: 0, y: 0, z: 0}
 --- !u!64 &1446411292
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -799,6 +803,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   colliderType: 2
   colliderEvent: 0
+  AccVelocity: {x: 0, y: 0, z: 0}
 --- !u!64 &1515910205
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -982,7 +987,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7054d6ec52362f841ac4e2ceb1248af1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ParticleObj: {fileID: 4119383697818013576, guid: b496664dad088904cb87f87ded1320e2,
+  ParticleObj: {fileID: 3078111534850980239, guid: 355d657f4fca9174aaf38c9685f9dfe6,
     type: 3}
   maxAmount: 10000
   SpawnPerSecond: 100
@@ -990,9 +995,9 @@ MonoBehaviour:
   SpawnAreas:
   - {fileID: 1759643296}
   SpawnBetweenSpace: 0.5
-  SpawnRandomPoint: 0
-  SpawnAmount: 1271
-  SpawnAmountForSecond: 50
+  SpawnRandomPoint: 1
+  SpawnAmount: 0
+  SpawnAmountForSecond: 0
 --- !u!4 &1759643298
 Transform:
   m_ObjectHideFlags: 0
