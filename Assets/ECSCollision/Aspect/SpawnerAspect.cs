@@ -132,40 +132,6 @@ namespace EcsCollision
         #endregion//
 
         #region Job
-        [BurstCompile, System.Obsolete]
-        public partial struct DebugSpawnJob : IJob
-        {
-            public EntityCommandBuffer ecb;
-            [ReadOnly] public ParticleParameterComponent particle;
-            [ReadOnly] public DebugSpawnerComponent spawnComponent;
-            [ReadOnly] public LocalTransform transform;
-            public uint randomSeed;
-
-            public void Execute()
-            {
-                var random = new Unity.Mathematics.Random(randomSeed);
-                int size = Mathf.FloorToInt(Mathf.Pow(spawnComponent.Amount, 1 / 3f));
-
-                for (int i = 0; i < spawnComponent.Amount; i++)
-                {
-                    var instance = ecb.Instantiate(spawnComponent.particle);
-
-                    var position = new float3((i % size) * 1.2f + random.NextFloat(-0.1f, 0.1f) * spawnComponent.RandomPower,
-                        0 + (i / size / size) * 1.2f,
-                        ((i / size) % size) * 1.2f + random.NextFloat(-0.1f, 0.1f) * spawnComponent.RandomPower) + transform.Position;
-
-                    var Ltrans = new LocalTransform
-                    {
-                        Position = position,
-                        Rotation = quaternion.identity,
-                        Scale = particle.ParticleRadius / 0.5f
-                    };
-
-                    ecb.SetComponent(instance, Ltrans);
-                }
-            }
-        }
-
         [BurstCompile]
         public partial struct SpawnJob : IJobEntity
         {

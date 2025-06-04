@@ -5,11 +5,10 @@ using Unity.Entities;
 
 namespace EcsCollision
 {
-    public enum FloorType { None, Collision, Disable, Kill};
+    public enum FloorType { None, Collision, Disable, Kill };
 
     public class ParticleParameter : MonoBehaviour
     {
-        public static ParticleParameter instance;
 
         public float particleRadius = 0.5f;
         public float smoothRadius = 0f;
@@ -22,7 +21,7 @@ namespace EcsCollision
         public float particleDrag = 0.2f;
         [Tooltip("충돌시 일어냄 강도")]
         public float particlePush = 1f;
-        [Tooltip("") , Range(0f, 1f)]
+        [Tooltip(""), Range(0f, 1f)]
         public float SimulateLiquid = 0.25f;
         public int MoveFPS = 120;
 
@@ -38,7 +37,7 @@ namespace EcsCollision
 
         public void Start()
         {
-            
+
         }
     }
 
@@ -106,30 +105,29 @@ namespace EcsCollision
     {
         public override void Bake(ParticleParameter authoring)
         {
-            ParticleParameter.instance = authoring;
 
             AddComponent(
                 GetEntity(authoring, TransformUsageFlags.None),
                 new ParticleParameterComponent
-            {
-                ParticleRadius = authoring.particleRadius,
-                SmoothRadius = authoring.smoothRadius,
-                Gravity = authoring.gravity,
-                ParticleViscosity = authoring.particleViscosity,
-                ParticleDrag = authoring.particleDrag,
-                ParticlePush = authoring.particlePush,
-                //DT = 1f / authoring.MoveFPS,
-                SimulateLiquid = authoring.SimulateLiquid,
+                {
+                    ParticleRadius = authoring.particleRadius,
+                    SmoothRadius = authoring.smoothRadius,
+                    Gravity = authoring.gravity,
+                    ParticleViscosity = authoring.particleViscosity,
+                    ParticleDrag = authoring.particleDrag,
+                    ParticlePush = authoring.particlePush,
+                    //DT = 1f / authoring.MoveFPS,
+                    SimulateLiquid = authoring.SimulateLiquid,
 
-                CollisionPush = authoring.collisionPush,
-                CollisionPushStart =
+                    CollisionPush = authoring.collisionPush,
+                    CollisionPushStart =
                     authoring.collisionPushMultiply.keys.Length >= 2 ? authoring.collisionPushMultiply.keys[0] : default,
-                CollisionPushEnd =
+                    CollisionPushEnd =
                     authoring.collisionPushMultiply.keys.Length >= 2 ? authoring.collisionPushMultiply.keys[1] : default,
 
-                floorType = authoring.floorType,
-                floorHeight = authoring.floorHeight
-            });
+                    floorType = authoring.floorType,
+                    floorHeight = authoring.floorHeight
+                });
         }
     }
 }

@@ -412,7 +412,8 @@ namespace EcsCollision
                         else
                         {
                             force = force.normalized * particleData[index].velocity.magnitude;
-                            data.velocity = force * (1 - parameter.ParticleViscosity);//안정적인데 , 전체적으로 느려지고 굴러 내려가는것도 느려져서
+                            data.velocity = force * (1 - parameter.ParticleViscosity);
+                            //안정적인데 , 전체적으로 느려지고 굴러 내려가는것도 느려져서
                         }
                     }
                     else
@@ -462,7 +463,7 @@ namespace EcsCollision
         bool isReady = false;
         float timer = 0;
 
-        int DebuggingIndex = 1;
+        //int DebuggingIndex = 1;
 
         protected override void OnCreate()
         {
@@ -530,7 +531,7 @@ namespace EcsCollision
             var particleDir = new NativeArray<Vector3>(particleCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             var particleVel = new NativeArray<Vector3>(particleCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             var particleMoveRes = new NativeArray<float>(particleCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            ///NativeArray<int> particleIndices = new NativeArray<int>(particleCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+
             NativeArray<int> cellOffsetTableNative = new NativeArray<int>(cellOffsetTable, Allocator.TempJob);
 
             var obstacleTransform = ObstacleGroup.ToComponentDataArray<LocalTransform>(Allocator.TempJob);
@@ -552,12 +553,6 @@ namespace EcsCollision
 
             JobHandle SetupMergedHandle = JobHandle.CombineDependencies(PositionSetupHandle, particleDirJobHandle, particleMoveResJobHandle);
 
-            ///MemsetNativeArray<int> particleIndicesJob = new MemsetNativeArray<int> { Source = particleIndices, Value = 0 };
-            ///JobHandle particleIndicesJobHandle = particleIndicesJob.Schedule(particleCount, 64);
-            //----------> particleIndices : 해당영역에 첫번째 파티클 / 딱히 쓰는데 없는데
-
-            //-----
-
 
             ResetAcc ResetAccJob = new ResetAcc
             {
@@ -578,19 +573,7 @@ namespace EcsCollision
 
             //particlePosition 이 완료되고 실행
             JobHandle hashPositionsJobHandle = hashPositionsJob.Schedule(particleCount, 64, ResetAccHandle);
-            //이걸쓰는 job이 hashPositionJob 과 particleIndicesJob 끝나야 실행되게
-            ///JobHandle mergedPositionIndicesJobHandle = JobHandle.CombineDependencies(hashPositionsJobHandle, particleIndicesJobHandle);
 
-            ///MergeParticles mergeParticlesJob = new MergeParticles
-            ///{
-            ///     particleIndices = particleIndices
-            ///};
-
-            //이 작업의 목적은 각 입자에 hashMap 버킷의 ID를 부여하는 것입니다.
-            ///JobHandle mergeParticlesJobHandle = mergeParticlesJob.Schedule(hashMap, 64, mergedPositionIndicesJobHandle);
-            ///mergeParticlesJobHandle.Complete();
-
-            // 입자간 충돌 사전 작업완료
             #endregion
 
             #region Calculation Job
@@ -649,7 +632,6 @@ namespace EcsCollision
             JobHandle ComputeCollisionHandle = ComputeCollisionJob.Schedule(particleCount, 64, ObstacleCollisionHandle);
             //ComputeCollisionHandle.Complete();
 
-            Debugging(particleData, "ComputeCollisionJob");//=================
 
             AddPosition AddPositionJob = new AddPosition
             {
@@ -661,14 +643,7 @@ namespace EcsCollision
             JobHandle AddPositionHandle = AddPositionJob.ScheduleParallel(ParticleGroup, ComputeCollisionHandle);
             AddPositionHandle.Complete();// ------ 없으면 에러
 
-            Debugging(particleData, "AddPositionJob");
 
-            // ApplyPosition ApplyPositionJob = new() 
-            // {
-            //     size = Parameter.ParticleRadius / 0.5f
-            // };
-            // //JobHandle ApplyPositionHandle = ApplyPositionJob.ScheduleParallel(ParticleGroup, AddPositionHandle);
-            // ApplyPositionJob.ScheduleParallel(ParticleGroup);//? 따로 때어 내기기
 
             #endregion
 
@@ -695,17 +670,6 @@ namespace EcsCollision
             }
         }
         #endregion Update
-        public void Debugging(NativeArray<FluidSimlationComponent> ParameterData, string comment)
-        {
-            //DebuggingIndex
-            //ParameterData[0].position
-            if (DebuggingIndex < ParameterData.Length)
-            {
-                //Debug.Log(DebuggingIndex + " | " + comment + " : Pos :" + ParameterData[DebuggingIndex].position
-                //    + " / velo :" +  ParameterData[DebuggingIndex].velocity + " / Is Ground : " + ParameterData[DebuggingIndex].isGround
-                //     + " / velo sqrLength : " + ParameterData[DebuggingIndex].velocity.sqrMagnitude);
-            }
-        }
     }
 }
 

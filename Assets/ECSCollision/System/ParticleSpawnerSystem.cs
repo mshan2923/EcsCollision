@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using DOTS;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
@@ -31,13 +32,15 @@ namespace EcsCollision
 
         float IntervalCount = 0;
 
-        bool ChangingMaxAmount = false;
+        //bool ChangingMaxAmount = false;
 
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
 
-            ParticleManager = SystemAPI.GetSingletonRW<ParticleParameterComponent>();
+            if (SystemAPI.TryGetSingletonRW<ParticleParameterComponent>(out ParticleManager) == false)
+                return;
+
             if (SystemAPI.TryGetSingletonRW<ParticleSpawnerComponent>(out var spawnerComponent))
             {
                 SpawnManager = spawnerComponent;
@@ -87,9 +90,6 @@ namespace EcsCollision
                 ECB.Playback(EntityManager);
                 ECB.Dispose();
 
-
-
-                ParticleSpawner.instance.OnChangeMaxSpawnAmount += OnChangeMaxSpawnAmount;
             }
             else
                 Enabled = false;
@@ -108,6 +108,8 @@ namespace EcsCollision
             }
 
             spawnerAspect = SystemAPI.GetAspect<SpawnerAspect>(SpawnerEntity);
+            SpawnAreaQuery = DOTSMecro.GetEntityQuery<ParticleSpawnAreaComponent>(EntityManager);
+            SystemAPI.TryGetSingletonRW<ParticleParameterComponent>(out ParticleManager);
 
             {
                 if (Input.GetMouseButton(0) && false)
@@ -146,40 +148,6 @@ namespace EcsCollision
 
             IntervalCount += SystemAPI.Time.DeltaTime;
 
-            {
-                ParticleManager = SystemAPI.GetSingletonRW<ParticleParameterComponent>();
-                if (!Mathf.Approximately(ParticleManager.ValueRO.ParticleRadius, ParticleParameter.instance.particleRadius))
-                {
-                    //var parameter = ParticleManager;
-                    //parameter.ParticleRadius = ParticleSpawner.instance.ParticleRadius;
-                    //EntityManager.SetComponentData(spawnerAspect.self, parameter);
-
-                    ParticleManager.ValueRW.ParticleRadius = ParticleParameter.instance.particleRadius;
-
-                    //Debug.Log($"Edited : {ParticleManager.ParticleRadius} / {ParticleSpawner.instance.ParticleRadius}");
-                }//HasheDluidSimulation 에서 위치 적용할때 같이 하면 바로 적용
-
-                if (ParticleParameter.instance.NeedUpdate)
-                {
-                    ParticleManager.ValueRW.ParticleRadius = ParticleParameter.instance.particleRadius;
-                    ParticleManager.ValueRW.SmoothRadius = ParticleParameter.instance.smoothRadius;
-                    ParticleManager.ValueRW.Gravity = ParticleParameter.instance.gravity;
-                    ParticleManager.ValueRW.ParticleViscosity = ParticleParameter.instance.particleViscosity;
-                    ParticleManager.ValueRW.ParticleDrag = ParticleParameter.instance.particleDrag;
-                    ParticleManager.ValueRW.ParticlePush = ParticleParameter.instance.particlePush;
-                    ParticleManager.ValueRW.SimulateLiquid = ParticleParameter.instance.SimulateLiquid;
-                    //ParticleManager.ValueRW.DT = 1f / ParticleParameter.instance.MoveFPS;
-                    ParticleManager.ValueRW.floorType = ParticleParameter.instance.floorType;
-                    ParticleManager.ValueRW.floorHeight = ParticleParameter.instance.floorHeight;
-
-                    ParticleParameter.instance.NeedUpdate = false;
-                }
-
-                if (spawnerAspect.SpawnData.SpawnPerSecond != ParticleSpawner.instance.SpawnPerSecond)
-                {
-                    spawnerAspect.spawn.ValueRW.SpawnPerSecond = ParticleSpawner.instance.SpawnPerSecond;
-                }
-            }//Apply Edit Vaule
 
             if (IntervalCount > spawnerAspect.SpawnData.SpawnInterval)
             {
@@ -193,14 +161,7 @@ namespace EcsCollision
                 int spawnCountforSec = Mathf.FloorToInt(1f / spawnerAspect.SpawnData.SpawnInterval);
                 int spawnAmount = spawnerAspect.SpawnData.SpawnPerSecond / spawnCountforSec;
 
-                //Debug.Log($"S : {SpawnedParticle.Length} / D : {disabled.Length} \n {disabled[0]}");
-                //Debug.Log($"Active : {spawnerAspect.GetActiveParticle(this).Length} ,  Spawn Amount for Once : {spawnAmount}");
-
                 var spawnArea = SpawnAreaQuery.ToComponentDataArray<ParticleSpawnAreaComponent>(Allocator.TempJob);
-
-                // ParticleSpawer에 다시 보내기
-                ParticleSpawner.instance.SpawnAmount = spawnerAspect.GetActiveParticleCount(this);
-                ParticleSpawner.instance.SpawnAmountForSecond = Math.Min(Math.Min(spawnAmount, spawnerAspect.GetSpawnPointAmount(spawnArea)), disabled.Length);
 
                 if (spawnerAspect.EnableParticles(this, ecb, disabled, spawnArea, ParticleManager.ValueRO,
                     (uint)World.Time.ElapsedTime + 1u, out var enableHandler))
@@ -215,6 +176,7 @@ namespace EcsCollision
             }
         }
 
+        [System.Obsolete]
         public void OnChangeMaxSpawnAmount(int preAmount, int amount)
         {
             //Debug.Log($"Changed {preAmount} >> {amount}");
@@ -253,7 +215,7 @@ namespace EcsCollision
             else if (AddAmount > 0)
             {
                 spawnerAspect.GetDisableParticle(this, SpawnedParticle, out var disabled);
-                spawnerAspect.SetMaxAmount(ParticleSpawner.instance.MaxAmount, SpawnedParticle, disabled);
+                spawnerAspect.SetMaxAmount(spawnerAspect.spawn.ValueRO.MaxAmount, SpawnedParticle, disabled);
 
                 var ECB = new EntityCommandBuffer(Allocator.TempJob);
                 spawnerAspect.IntiParticle(ECB)

@@ -1,7 +1,10 @@
+using DOTS;
 using EcsCollision;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Collections;
+using Unity.Entities;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,33 +30,44 @@ public class EcsParticleOptionWidget : MonoBehaviour
         MainButton.onClick.AddListener(OnClickMainButton);
         MainPanel.SetActive(IntiActive);
 
-        if (ParticleSpawner.instance == null)
-        {
-            this.enabled = false;
-            return;
-        }    
+
+        var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        var parameter = DOTSMecro.GetSingleton<ParticleParameterComponent>(entityManager);
+        var spawner = DOTSMecro.GetSingleton<ParticleSpawnerComponent>(entityManager);
 
         MaxAmountInputField.onEndEdit.AddListener(OnEndEditMaxAmount);
-        MaxAmountInputField.text = ParticleSpawner.instance.MaxAmount.ToString();
+        MaxAmountInputField.text = spawner.MaxAmount.ToString();
 
-        SPC_Scrollbar.value = ParticleSpawner.instance.SpawnPerSecond / ParticleSpawner.instance.MaxAmount;
+        SPC_Scrollbar.value = spawner.SpawnPerSecond / spawner.MaxAmount;
         SPC_Scrollbar.onValueChanged.AddListener(OnChangedSPCScroll);
 
-        RadiusScrollbar.value = ParticleParameter.instance.particleRadius * 0.1f;
+        RadiusScrollbar.value = parameter.ParticleRadius;
         RadiusScrollbar.onValueChanged.AddListener(OnChangedRadiusScroll);
 
-        LiquidScrollbar.value = ParticleParameter.instance.SimulateLiquid;
-        LiquidScrollbar.onValueChanged.AddListener (OnChangedLiquidScroll);
+        LiquidScrollbar.value = parameter.SimulateLiquid;
+        LiquidScrollbar.onValueChanged.AddListener(OnChangedLiquidScroll);
     }
 
     // Update is called once per frame
     void Update()
     {
-        //ParticleSpawner.instance.MaxAmount
-        ActiveAmountText.text = ParticleSpawner.instance.SpawnAmount.ToString();
-        SPC_HandleText.text = ParticleSpawner.instance.SpawnAmountForSecond.ToString();
-        RadiusHandleText.text = ParticleParameter.instance.particleRadius.ToString("0.##");
-        LiquidHandleText.text = ParticleParameter.instance.SimulateLiquid.ToString("0.##");
+        var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        if (DOTSMecro.TrySingleton<ParticleParameterComponent>(entityManager, out var parameter))
+        {
+            var spawner = DOTSMecro.GetSingleton<ParticleSpawnerComponent>(entityManager);
+
+            int duckAmount = 0;
+            {
+                var builder = new EntityQueryBuilder(Allocator.Temp);
+                builder.WithAll<FluidSimlationComponent>();
+                duckAmount = entityManager.CreateEntityQuery(builder).CalculateEntityCount();
+            }
+
+            ActiveAmountText.text = duckAmount.ToString();//spawner.MaxAmount.ToString();
+            SPC_HandleText.text = spawner.SpawnPerSecond.ToString();
+            RadiusHandleText.text = parameter.ParticleRadius.ToString("0.##");
+            LiquidHandleText.text = parameter.SimulateLiquid.ToString("0.##");
+        }
     }
 
     public void OnClickMainButton()
@@ -62,19 +76,27 @@ public class EcsParticleOptionWidget : MonoBehaviour
     }
     public void OnEndEditMaxAmount(string vaule)
     {
-        ParticleSpawner.instance.MaxAmount = Mathf.Clamp(int.Parse(vaule), 0, int.MaxValue);
+        var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        var spawner = DOTSMecro.GetSingletonRW<ParticleSpawnerComponent>(entityManager);
+        spawner.ValueRW.MaxAmount = Mathf.Clamp(int.Parse(vaule), 0, int.MaxValue);
     }
     public void OnChangedSPCScroll(float vaule)
     {
-        ParticleSpawner.instance.SpawnPerSecond = Mathf.RoundToInt(ParticleSpawner.instance.MaxAmount * vaule);
+        var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        var spawner = DOTSMecro.GetSingletonRW<ParticleSpawnerComponent>(entityManager);
+        spawner.ValueRW.SpawnPerSecond = Mathf.RoundToInt(spawner.ValueRO.MaxAmount * vaule);
     }
     public void OnChangedRadiusScroll(float vaule)
     {
-        ParticleParameter.instance.particleRadius = vaule * 10;
+        var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        var parameter = DOTSMecro.GetSingletonRW<ParticleParameterComponent>(entityManager);
+        parameter.ValueRW.ParticleRadius = vaule;
+
     }
     public void OnChangedLiquidScroll(float vaule)
     {
-        ParticleParameter.instance.SimulateLiquid = vaule;
-        ParticleParameter.instance.NeedUpdate = true;
+        var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        var parameter = DOTSMecro.GetSingletonRW<ParticleParameterComponent>(entityManager);
+        parameter.ValueRW.SimulateLiquid = vaule;
     }
 }

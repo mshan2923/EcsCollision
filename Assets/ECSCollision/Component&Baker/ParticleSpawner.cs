@@ -13,20 +13,15 @@ namespace EcsCollision
 {
     public class ParticleSpawner : MonoBehaviour
     {
-        public static ParticleSpawner instance;
 
         public GameObject ParticleObj;
         [Expand.ReadOnly] public int maxAmount = 10000;
         public int MaxAmount
         {
             get { return maxAmount; }
-            set 
+            set
             {
-                if (OnChangeMaxSpawnAmount != null && maxAmount != value)
-                {
-                    //OnChangeMaxSpawnAmount(maxAmount, value);
-                }
-                maxAmount = value; 
+                maxAmount = value;
             }
         }
         public int SpawnPerSecond = 1000;
@@ -49,9 +44,6 @@ namespace EcsCollision
         [Expand.ReadOnly] public int SpawnAmountForSecond;
 
 
-        public delegate void DelegateSMaxpawnAmount(int preAmount, int amount);
-        public DelegateSMaxpawnAmount OnChangeMaxSpawnAmount;
-
         //  싱글톤으로 (Baker에서 설정) 스폰공간 부족 알림 
         // 최대갯수에 도달했을때 추가 스폰 ...적용은 되긴 할껀데 확인 
         void Start()
@@ -64,15 +56,15 @@ namespace EcsCollision
     [CustomEditor(typeof(ParticleSpawner))]
     public class ParticleSpawnerEditor : Editor
     {
-        ParticleSpawner target;
+        ParticleSpawner onwer;
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
-            if (target == null)
-                target = serializedObject.targetObject as ParticleSpawner;
+            if (onwer == null)
+                onwer = serializedObject.targetObject as ParticleSpawner;
 
-            target.MaxAmount = EditorGUILayout.DelayedIntField("Spawn Max Amount", target.MaxAmount);
+            onwer.MaxAmount = EditorGUILayout.DelayedIntField("Spawn Max Amount", onwer.MaxAmount);
         }
     }
 
@@ -94,7 +86,6 @@ namespace EcsCollision
     {
         public override void Bake(ParticleSpawner authoring)
         {
-            ParticleSpawner.instance = authoring;
 
             var entity = GetEntity(authoring, TransformUsageFlags.Dynamic);
             AddBuffer<ParticleSpawnAreaElement>(entity);
