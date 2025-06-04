@@ -7,8 +7,9 @@
 </p><p id="4cdd2927-d836-4632-9467-9d096eb56a67" class="">
 </p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span>
 
+<br/>2022.3.62f 에서 테스트 , 2022버전 이상 지원 <br/>
+<p></p>
 
-<br/><br/>
 ![Unity Dots 10k Physics Test](https://github.com/user-attachments/assets/adfa6344-c1c2-438c-818c-61596aaf3f34)
 
 [Demo](https://youtu.be/QzyeLBs9Zk8)
